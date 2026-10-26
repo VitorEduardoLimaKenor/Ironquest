@@ -1,0 +1,21 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDEs (Spring Tool Suite / Eclipse, IntelliJ, VS Code)
+.classpath
+.project
+.settings/
+.factorypath
+.springBeans
+.sts4-cache/
+.idea/
+*.iml
+.vscode/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Configuração local com credenciais
+application-local.yml
+.env

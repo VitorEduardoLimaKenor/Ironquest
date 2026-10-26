@@ -1,0 +1,21 @@
+# Alternativa ao MySQL Community instalado localmente: sobe um MySQL 8.4 com as mesmas credenciais
+# padrão do application.yml. Uso: docker compose up -d
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: ironquest-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ironquest
+    ports:
+      - "3306:3306"
+    volumes:
+      - ironquest-mysql-dados:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  ironquest-mysql-dados:

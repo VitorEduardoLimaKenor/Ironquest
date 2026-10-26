@@ -1,0 +1,3155 @@
+{
+  "info": {
+    "name": "IronQuest API - Checkpoint 2",
+    "description": "Funcionalidades da API organizadas pelas aulas do checkpoint 2. Execute a coleção inteira, em ordem (Run collection): as requisições guardam ids em variáveis da coleção. Documentação interativa: http://localhost:8080/swagger-ui.html",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api"
+    }
+  ],
+  "item": [
+    {
+      "name": "Aula 01 - Modelo, repositório e recursos",
+      "description": "GrupoMuscular faz o papel de Categoria: entidade JPA, repositório Spring Data e controller REST.",
+      "item": [
+        {
+          "name": "Listar grupos musculares",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/grupos-musculares",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "grupos-musculares"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Seed com ao menos 10 grupos\", () => pm.expect(pm.response.json().length).to.be.at.least(10));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar grupo muscular por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/grupos-musculares/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "grupos-musculares",
+                "1"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Mensagem: Peito\", () => pm.expect(pm.response.json().nome).to.eql(\"Peito\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar grupo muscular inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/grupos-musculares/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "grupos-musculares",
+                "999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Mensagem: Grupo muscular de id 999999 não encontrado(a)\", () => pm.expect(pm.response.json().detail).to.eql(\"Grupo muscular de id 999999 não encontrado(a)\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 02 - Cadastrando novo grupo muscular",
+      "description": "POST com 201 Created e cabeçalho Location.",
+      "item": [
+        {
+          "name": "Criar grupo muscular",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/grupos-musculares",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "grupos-musculares"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"{{nomeGrupo}}\",\n  \"descricao\": \"Flexores e extensores do punho\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"nomeGrupo\", `Antebraço ${Date.now()}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"grupoId\", pm.response.json().id);",
+                  "pm.test(\"Location aponta para o recurso criado\", () => pm.expect(pm.response.headers.get(\"Location\")).to.match(/\\/api\\/grupos-musculares\\/\\d+$/));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 03 - Cadastrando novos recursos",
+      "description": "Usuário faz o papel de Pessoa; também são cadastrados personagem e exercício.",
+      "item": [
+        {
+          "name": "Cadastrar jogador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Vitor Kenor\",\n  \"email\": \"{{emailJogador}}\",\n  \"senha\": \"senhaForte123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"emailJogador\", `jogador${Date.now()}@ironquest.dev`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"usuarioId\", pm.response.json().id);",
+                  "pm.test(\"Papel padrão JOGADOR\", () => pm.expect(pm.response.json().papeis).to.eql([\"JOGADOR\"]));",
+                  "pm.test(\"Senha não é exposta\", () => pm.expect(pm.response.json()).to.not.have.property(\"senha\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar treinador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Ana Treinadora\",\n  \"email\": \"{{emailTreinador}}\",\n  \"senha\": \"senhaForte123\",\n  \"papeis\": [\n    \"TREINADOR\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"emailTreinador\", `treinador${Date.now()}@ironquest.dev`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"treinadorId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar personagem do jogador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/personagem",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "personagem"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Kenor, o Persistente\",\n  \"objetivoPrincipal\": \"HIPERTROFIA\",\n  \"frequenciaSemanalAlvo\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"personagemId\", pm.response.json().id);",
+                  "pm.test(\"Location aponta para o recurso criado\", () => pm.expect(pm.response.headers.get(\"Location\")).to.match(/\\/api\\/personagens\\/\\d+$/));",
+                  "pm.test(\"4 atributos iniciais\", () => pm.expect(pm.response.json().atributos).to.have.length(4));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar exercício no novo grupo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/exercicios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exercicios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"{{nomeExercicio}}\",\n  \"descricao\": \"Flexão de punho com barra\",\n  \"grupoMuscularId\": {{grupoId}},\n  \"tipo\": \"ISOLADO\",\n  \"equipamento\": \"BARRA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"nomeExercicio\", `Rosca punho ${Date.now()}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"exercicioId\", pm.response.json().id);",
+                  "pm.test(\"Location aponta para o recurso criado\", () => pm.expect(pm.response.headers.get(\"Location\")).to.match(/\\/api\\/exercicios\\/\\d+$/));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 04 - Validando atributos desconhecidos",
+      "description": "spring.jackson.deserialization.fail-on-unknown-properties=true",
+      "item": [
+        {
+          "name": "Atributo desconhecido no JSON (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Teste\",\n  \"email\": \"teste@ironquest.dev\",\n  \"senha\": \"senhaForte123\",\n  \"apelido\": \"tt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensagem: O atributo 'apelido' não é reconhecido\", () => pm.expect(pm.response.json().detail).to.eql(\"O atributo 'apelido' não é reconhecido\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 05 - Tratando erros com ExceptionHandler",
+      "description": "TratadorGlobalExcecoes: mensagemUsuario (messages.properties) e mensagemDesenvolvedor.",
+      "item": [
+        {
+          "name": "JSON malformado (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nome\": ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensagem: Mensagem inválida\", () => pm.expect(pm.response.json().detail).to.eql(\"Mensagem inválida\"));",
+                  "pm.test(\"Traz mensagem para o desenvolvedor\", () => pm.expect(pm.response.json().erros[0].mensagemDesenvolvedor).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Valor fora do enum (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/exercicios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exercicios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Remada\",\n  \"grupoMuscularId\": 2,\n  \"tipo\": \"QUALQUER\",\n  \"equipamento\": \"BARRA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensagem: Valor inválido para o atributo 'tipo'\", () => pm.expect(pm.response.json().detail).to.eql(\"Valor inválido para o atributo 'tipo'\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Parâmetro com tipo errado (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "abc"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensagem: Valor 'abc' inválido para o parâmetro 'id'\", () => pm.expect(pm.response.json().detail).to.eql(\"Valor 'abc' inválido para o parâmetro 'id'\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rota inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rota-inexistente",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rota-inexistente"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Mensagem: Recurso inexistente\", () => pm.expect(pm.response.json().detail).to.eql(\"Recurso inexistente\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 06 - Validando valores inválidos com Bean Validation",
+      "description": "@Valid nos DTOs; rótulos e textos vêm do messages.properties.",
+      "item": [
+        {
+          "name": "Cadastro com dados inválidos (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"\",\n  \"email\": \"nao-e-email\",\n  \"senha\": \"123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensagem: Dados inválidos\", () => pm.expect(pm.response.json().title).to.eql(\"Dados inválidos\"));",
+                  "pm.test(\"nome: Nome é obrigatório(a)\", () => pm.expect(pm.response.json().erros.find(e => e.campo === \"nome\").mensagemUsuario).to.eql(\"Nome é obrigatório(a)\"));",
+                  "pm.test(\"email: E-mail deve ser um e-mail válido\", () => pm.expect(pm.response.json().erros.find(e => e.campo === \"email\").mensagemUsuario).to.eql(\"E-mail deve ser um e-mail válido\"));",
+                  "pm.test(\"senha: Senha deve ter entre 8 e 72 caracteres\", () => pm.expect(pm.response.json().erros.find(e => e.campo === \"senha\").mensagemUsuario).to.eql(\"Senha deve ter entre 8 e 72 caracteres\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Frequência semanal acima de 7 (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/personagens/{{personagemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "personagens",
+                "{{personagemId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Kenor\",\n  \"objetivoPrincipal\": \"FORCA\",\n  \"frequenciaSemanalAlvo\": 9\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"frequenciaSemanalAlvo: Frequência semanal deve ser menor ou igual a 7\", () => pm.expect(pm.response.json().erros.find(e => e.campo === \"frequenciaSemanalAlvo\").mensagemUsuario).to.eql(\"Frequência semanal deve ser menor ou igual a 7\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 07 - Controlando eventos na aplicação",
+      "description": "RecursoCriadoEvent + RecursoCriadoListener preenchem o Location de todo POST que cria recurso.",
+      "item": [
+        {
+          "name": "Criar recompensa (Location via evento)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/recompensas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recompensas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Poção de Vigor\",\n  \"descricao\": \"80 XP e 1 ponto de Vigor\",\n  \"experiencia\": 80,\n  \"tipoAtributo\": \"VIGOR\",\n  \"pontosAtributo\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"recompensaId\", pm.response.json().id);",
+                  "pm.test(\"Location aponta para o recurso criado\", () => pm.expect(pm.response.headers.get(\"Location\")).to.match(/\\/api\\/recompensas\\/\\d+$/));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar conquista (Location via evento)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/conquistas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conquistas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoConquista}}\",\n  \"nome\": \"Guardião do Agachamento\",\n  \"descricao\": \"Agachou 1,5x o peso corporal\",\n  \"regra\": \"1RM estimado no agachamento >= 1,5x peso corporal\",\n  \"recompensaId\": {{recompensaId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"codigoConquista\", `AGACHAMENTO_${Date.now()}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"conquistaId\", pm.response.json().id);",
+                  "pm.test(\"Location aponta para o recurso criado\", () => pm.expect(pm.response.headers.get(\"Location\")).to.match(/\\/api\\/conquistas\\/\\d+$/));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 08 - Atualizar e deletar recursos",
+      "description": "PUT e DELETE; 404 para recurso inexistente; regras de negócio nas classes Service.",
+      "item": [
+        {
+          "name": "Atualizar usuário",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Vitor Eduardo Kenor\",\n  \"email\": \"{{emailJogador}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Mensagem: Vitor Eduardo Kenor\", () => pm.expect(pm.response.json().nome).to.eql(\"Vitor Eduardo Kenor\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Atualizar grupo muscular",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/grupos-musculares/{{grupoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "grupos-musculares",
+                "{{grupoId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"{{nomeGrupo}}\",\n  \"descricao\": \"Músculos do antebraço\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Atualizar exercício",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/exercicios/{{exercicioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exercicios",
+                "{{exercicioId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"{{nomeExercicio}}\",\n  \"descricao\": \"Flexão de punho sentado\",\n  \"grupoMuscularId\": {{grupoId}},\n  \"tipo\": \"ISOLADO\",\n  \"equipamento\": \"HALTER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Mensagem: HALTER\", () => pm.expect(pm.response.json().equipamento).to.eql(\"HALTER\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Atualizar objetivos do personagem",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/personagens/{{personagemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "personagens",
+                "{{personagemId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Kenor, o Persistente\",\n  \"objetivoPrincipal\": \"FORCA\",\n  \"frequenciaSemanalAlvo\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Mensagem: FORCA\", () => pm.expect(pm.response.json().objetivoPrincipal).to.eql(\"FORCA\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E-mail duplicado: regra no Service (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Duplicado\",\n  \"email\": \"{{emailJogador}}\",\n  \"senha\": \"senhaForte123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir conquista",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conquistas/{{conquistaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conquistas",
+                "{{conquistaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir conquista já removida (404)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conquistas/{{conquistaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conquistas",
+                "{{conquistaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir recompensa",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/recompensas/{{recompensaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recompensas",
+                "{{recompensaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 09 - Criando atualização parcial",
+      "description": "PUT /{id}/ativo altera só a propriedade ativo.",
+      "item": [
+        {
+          "name": "Desativar exercício",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/exercicios/{{exercicioId}}/ativo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exercicios",
+                "{{exercicioId}}",
+                "ativo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "false",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar exercícios inativos do grupo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exercicios?grupoMuscularId={{grupoId}}&ativo=false",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exercicios"
+              ],
+              "query": [
+                {
+                  "key": "grupoMuscularId",
+                  "value": "{{grupoId}}"
+                },
+                {
+                  "key": "ativo",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Exercício desativado aparece\", () => pm.expect(pm.response.json().map(e => e.id)).to.include(Number(pm.collectionVariables.get(\"exercicioId\"))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reativar exercício",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/exercicios/{{exercicioId}}/ativo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exercicios",
+                "{{exercicioId}}",
+                "ativo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "true",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Atualização parcial sem corpo (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/ativo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "ativo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensagem: O corpo da requisição é obrigatório\", () => pm.expect(pm.response.json().detail).to.eql(\"O corpo da requisição é obrigatório\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 10 - Relacionamento entre recursos",
+      "description": "Plano -> usuário, autor e exercícios; sessão -> usuário e plano; série -> sessão e exercício.",
+      "item": [
+        {
+          "name": "Criar plano montado pelo treinador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/planos-treino",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "planos-treino"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Treino A - Peito\",\n  \"descricao\": \"Foco em força\",\n  \"autorId\": {{treinadorId}},\n  \"itens\": [\n    {\n      \"exercicioId\": 1,\n      \"seriesAlvo\": 4,\n      \"repeticoesAlvo\": 5,\n      \"descansoSegundos\": 180\n    },\n    {\n      \"exercicioId\": {{exercicioId}},\n      \"seriesAlvo\": 3,\n      \"repeticoesAlvo\": 12\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"planoId\", pm.response.json().id);",
+                  "pm.test(\"Location aponta para o recurso criado\", () => pm.expect(pm.response.headers.get(\"Location\")).to.match(/\\/api\\/planos-treino\\/\\d+$/));",
+                  "const p = pm.response.json();",
+                  "pm.test(\"Autor é o treinador\", () => pm.expect(p.autor.nome).to.eql(\"Ana Treinadora\"));",
+                  "pm.test(\"Itens trazem o exercício\", () => pm.expect(p.itens[0].exercicio.nome).to.eql(\"Supino reto com barra\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Plano com exercício inexistente (404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/planos-treino",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "planos-treino"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Inválido\",\n  \"itens\": [\n    {\n      \"exercicioId\": 999999,\n      \"seriesAlvo\": 3,\n      \"repeticoesAlvo\": 10\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Mensagem: Exercício de id 999999 não encontrado(a)\", () => pm.expect(pm.response.json().detail).to.eql(\"Exercício de id 999999 não encontrado(a)\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Iniciar sessão vinculada ao plano",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/sessoes-treino",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "sessoes-treino"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planoTreinoId\": {{planoId}},\n  \"iniciadaEm\": \"2026-09-01T12:00:00Z\",\n  \"observacoes\": \"Peito pesado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"sessaoPeitoId\", pm.response.json().id);",
+                  "pm.test(\"Location aponta para o recurso criado\", () => pm.expect(pm.response.headers.get(\"Location\")).to.match(/\\/api\\/sessoes-treino\\/\\d+$/));",
+                  "pm.test(\"Mensagem: Treino A - Peito\", () => pm.expect(pm.response.json().planoTreino.nome).to.eql(\"Treino A - Peito\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Série supino 100 kg x 5",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoPeitoId}}/series",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoPeitoId}}",
+                "series"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exercicioId\": 1,\n  \"tipo\": \"TRABALHO\",\n  \"repeticoes\": 5,\n  \"cargaKg\": 100,\n  \"rpe\": 8,\n  \"rir\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Location aponta para o recurso criado\", () => pm.expect(pm.response.headers.get(\"Location\")).to.match(/\\/api\\/sessoes-treino\\/\\d+\\/series\\/\\d+$/));",
+                  "const s = pm.response.json();",
+                  "pm.test(\"Volume = 100 x 5\", () => pm.expect(s.volumeKg).to.eql(500));",
+                  "pm.test(\"1RM Epley = 116,67\", () => pm.expect(s.umRmEstimadoKg).to.eql(116.67));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Série com exercício inexistente (404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoPeitoId}}/series",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoPeitoId}}",
+                "series"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exercicioId\": 999999,\n  \"tipo\": \"TRABALHO\",\n  \"repeticoes\": 5,\n  \"cargaKg\": 50\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 11 - Listar recursos com relacionamentos e LocalDate",
+      "description": "dataTreino (LocalDate) é calculada no fuso America/Sao_Paulo.",
+      "item": [
+        {
+          "name": "Detalhar sessão",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoPeitoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoPeitoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json();",
+                  "pm.test(\"Data do treino (LocalDate)\", () => pm.expect(s.dataTreino).to.eql(\"2026-09-01\"));",
+                  "pm.test(\"Usuário relacionado\", () => pm.expect(s.usuario.nome).to.eql(\"Vitor Eduardo Kenor\"));",
+                  "pm.test(\"Série com exercício\", () => pm.expect(s.series[0].exercicio.nome).to.eql(\"Supino reto com barra\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar planos do usuário",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/planos-treino",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "planos-treino"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Plano com usuário e autor\", () => { const p = pm.response.json()[0]; pm.expect(p.usuario.nome).to.eql(\"Vitor Eduardo Kenor\"); pm.expect(p.autor.nome).to.eql(\"Ana Treinadora\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 12 - Validando inconsistências",
+      "description": "Restrições do banco viram 409 'Operação não permitida', com a causa na mensagemDesenvolvedor.",
+      "item": [
+        {
+          "name": "Excluir exercício usado em plano (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exercicios/{{exercicioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exercicios",
+                "{{exercicioId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Mensagem: Operação não permitida\", () => pm.expect(pm.response.json().title).to.eql(\"Operação não permitida\"));",
+                  "pm.test(\"Causa: chave estrangeira\", () => pm.expect(pm.response.json().erros[0].mensagemDesenvolvedor).to.include(\"foreign key\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir grupo com exercícios (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/grupos-musculares/{{grupoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "grupos-musculares",
+                "{{grupoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Segunda sessão simultânea (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/sessoes-treino",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "sessoes-treino"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 13 - Validando as classes do projeto com Bean Validation",
+      "description": "Validações em todos os DTOs.",
+      "item": [
+        {
+          "name": "Série com RPE 11 (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoPeitoId}}/series",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoPeitoId}}",
+                "series"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exercicioId\": 1,\n  \"tipo\": \"TRABALHO\",\n  \"repeticoes\": 5,\n  \"cargaKg\": 100,\n  \"rpe\": 11\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"rpe: RPE deve ser menor ou igual a 10.0\", () => pm.expect(pm.response.json().erros.find(e => e.campo === \"rpe\").mensagemUsuario).to.eql(\"RPE deve ser menor ou igual a 10.0\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Item de plano inválido (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/planos-treino",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "planos-treino"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Treino B\",\n  \"itens\": [\n    {\n      \"exercicioId\": 1,\n      \"seriesAlvo\": 50,\n      \"repeticoesAlvo\": 8\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"itens[0].seriesAlvo: itens[0].seriesAlvo deve ser menor ou igual a 20\", () => pm.expect(pm.response.json().erros.find(e => e.campo === \"itens[0].seriesAlvo\").mensagemUsuario).to.eql(\"itens[0].seriesAlvo deve ser menor ou igual a 20\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Plano sem itens (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/planos-treino",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "planos-treino"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Vazio\",\n  \"itens\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"itens: Itens deve ter ao menos um item\", () => pm.expect(pm.response.json().erros.find(e => e.campo === \"itens\").mensagemUsuario).to.eql(\"Itens deve ter ao menos um item\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sessão iniciada no futuro (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/sessoes-treino",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "sessoes-treino"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"iniciadaEm\": \"2099-01-01T10:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"iniciadaEm: Início da sessão não pode estar no futuro\", () => pm.expect(pm.response.json().erros.find(e => e.campo === \"iniciadaEm\").mensagemUsuario).to.eql(\"Início da sessão não pode estar no futuro\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Conquista com código inválido (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/conquistas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conquistas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"minusculo\",\n  \"nome\": \"X\",\n  \"descricao\": \"X\",\n  \"regra\": \"X\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"codigo: Código deve conter apenas letras maiúsculas, dígitos e _\", () => pm.expect(pm.response.json().erros.find(e => e.campo === \"codigo\").mensagemUsuario).to.eql(\"Código deve conter apenas letras maiúsculas, dígitos e _\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Recompensa com pontos sem atributo (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/recompensas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recompensas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Inválida\",\n  \"experiencia\": 10,\n  \"pontosAtributo\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Mensagem: Informe o atributo (tipoAtributo) para conceder pontos de atributo\", () => pm.expect(pm.response.json().detail).to.eql(\"Informe o atributo (tipoAtributo) para conceder pontos de atributo\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 14 - Regra para não registrar treino com usuário inativo",
+      "description": "UsuarioInativoException: usuário inativo não inicia sessão nem registra séries.",
+      "item": [
+        {
+          "name": "Desativar jogador",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/ativo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "ativo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "false",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar série com usuário inativo (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoPeitoId}}/series",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoPeitoId}}",
+                "series"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exercicioId\": 1,\n  \"tipo\": \"TRABALHO\",\n  \"repeticoes\": 3,\n  \"cargaKg\": 105\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Mensagem da regra\", () => pm.expect(pm.response.json().detail).to.eql(`O usuário ${pm.collectionVariables.get(\"usuarioId\")} está inativo e não pode registrar treinos`));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar plano com usuário inativo (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/planos-treino",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "planos-treino"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Treino C\",\n  \"itens\": [\n    {\n      \"exercicioId\": 1,\n      \"seriesAlvo\": 3,\n      \"repeticoesAlvo\": 10\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reativar jogador",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/ativo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "ativo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "true",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar série após reativar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoPeitoId}}/series",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoPeitoId}}",
+                "series"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exercicioId\": 1,\n  \"tipo\": \"TRABALHO\",\n  \"repeticoes\": 3,\n  \"cargaKg\": 105,\n  \"rpe\": 9.5,\n  \"rir\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Finalizar sessão de peito",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoPeitoId}}/finalizar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoPeitoId}}",
+                "finalizar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"finalizadaEm\": \"2026-09-01T13:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Volume = 500 + 315\", () => pm.expect(r.sessao.volumeTotalKg).to.eql(815));",
+                  "pm.test(\"3 recordes novos\", () => pm.expect(r.novosRecordes).to.have.length(3));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reenviar finalização (idempotente)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoPeitoId}}/finalizar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoPeitoId}}",
+                "finalizar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Nada é recalculado\", () => { pm.expect(pm.response.json().jaEstavaFinalizada).to.eql(true); pm.expect(pm.response.json().novosRecordes).to.be.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Recordes do jogador",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/recordes?exercicioId=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "recordes"
+              ],
+              "query": [
+                {
+                  "key": "exercicioId",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Maior carga 105\", () => pm.expect(pm.response.json().find(r => r.tipo === \"MAIOR_CARGA\").valor).to.eql(105));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Iniciar sessão de pernas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/sessoes-treino",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "sessoes-treino"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"iniciadaEm\": \"2026-09-15T12:00:00Z\",\n  \"observacoes\": \"Dia de pernas\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"sessaoPernasId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Série agachamento 120 kg x 5",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoPernasId}}/series",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoPernasId}}",
+                "series"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exercicioId\": 11,\n  \"tipo\": \"TRABALHO\",\n  \"repeticoes\": 5,\n  \"cargaKg\": 120,\n  \"rpe\": 8.5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Finalizar sessão de pernas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoPernasId}}/finalizar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoPernasId}}",
+                "finalizar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"finalizadaEm\": \"2026-09-15T13:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Iniciar sessão às 01:30 UTC",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/sessoes-treino",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "sessoes-treino"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"iniciadaEm\": \"2026-10-01T01:30:00Z\",\n  \"observacoes\": \"Treino interrompido\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"sessaoCanceladaId\", pm.response.json().id);",
+                  "pm.test(\"Em São Paulo ainda é 30/09\", () => pm.expect(pm.response.json().dataTreino).to.eql(\"2026-09-30\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancelar sessão",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoCanceladaId}}/cancelar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoCanceladaId}}",
+                "cancelar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Mensagem: CANCELADA\", () => pm.expect(pm.response.json().status).to.eql(\"CANCELADA\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 15 - Filtro na pesquisa de sessões",
+      "description": "SessaoTreinoFilter + Criteria API (SessaoTreinoRepositoryImpl).",
+      "item": [
+        {
+          "name": "Filtrar por período",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino?usuarioId={{usuarioId}}&dataTreinoDe=2026-09-10&dataTreinoAte=2026-09-30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuarioId}}"
+                },
+                {
+                  "key": "dataTreinoDe",
+                  "value": "2026-09-10"
+                },
+                {
+                  "key": "dataTreinoAte",
+                  "value": "2026-09-30"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sessões esperadas, na ordem\", () => pm.expect(pm.response.json().content.map(s => s.id)).to.eql([Number(pm.collectionVariables.get(\"sessaoCanceladaId\")), Number(pm.collectionVariables.get(\"sessaoPernasId\"))]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino?usuarioId={{usuarioId}}&status=FINALIZADA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuarioId}}"
+                },
+                {
+                  "key": "status",
+                  "value": "FINALIZADA"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"2 finalizadas\", () => pm.expect(pm.response.json().page.totalElements).to.eql(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por exercício",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino?usuarioId={{usuarioId}}&exercicioId=11",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuarioId}}"
+                },
+                {
+                  "key": "exercicioId",
+                  "value": "11"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sessões esperadas, na ordem\", () => pm.expect(pm.response.json().content.map(s => s.id)).to.eql([Number(pm.collectionVariables.get(\"sessaoPernasId\"))]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por plano",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino?usuarioId={{usuarioId}}&planoTreinoId={{planoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuarioId}}"
+                },
+                {
+                  "key": "planoTreinoId",
+                  "value": "{{planoId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sessões esperadas, na ordem\", () => pm.expect(pm.response.json().content.map(s => s.id)).to.eql([Number(pm.collectionVariables.get(\"sessaoPeitoId\"))]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por texto das observações",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino?usuarioId={{usuarioId}}&observacoes=PERNAS",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuarioId}}"
+                },
+                {
+                  "key": "observacoes",
+                  "value": "PERNAS"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sessões esperadas, na ordem\", () => pm.expect(pm.response.json().content.map(s => s.id)).to.eql([Number(pm.collectionVariables.get(\"sessaoPernasId\"))]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Período invertido (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino?usuarioId={{usuarioId}}&dataTreinoDe=2026-10-10&dataTreinoAte=2026-10-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuarioId}}"
+                },
+                {
+                  "key": "dataTreinoDe",
+                  "value": "2026-10-10"
+                },
+                {
+                  "key": "dataTreinoAte",
+                  "value": "2026-10-01"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"periodoValido: A data inicial deve ser anterior ou igual à data final\", () => pm.expect(pm.response.json().erros.find(e => e.campo === \"periodoValido\").mensagemUsuario).to.eql(\"A data inicial deve ser anterior ou igual à data final\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Data em formato inválido (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino?usuarioId={{usuarioId}}&dataTreinoDe=01/10/2026",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuarioId}}"
+                },
+                {
+                  "key": "dataTreinoDe",
+                  "value": "01/10/2026"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"dataTreinoDe: Valor inválido para Data inicial\", () => pm.expect(pm.response.json().erros.find(e => e.campo === \"dataTreinoDe\").mensagemUsuario).to.eql(\"Valor inválido para Data inicial\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aula 16 - Paginação de sessões",
+      "description": "Pageable (page, size, sort) e resposta com content + page.",
+      "item": [
+        {
+          "name": "Primeira página",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino?usuarioId={{usuarioId}}&size=2&page=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuarioId}}"
+                },
+                {
+                  "key": "size",
+                  "value": "2"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sessões esperadas, na ordem\", () => pm.expect(pm.response.json().content.map(s => s.id)).to.eql([Number(pm.collectionVariables.get(\"sessaoCanceladaId\")), Number(pm.collectionVariables.get(\"sessaoPernasId\"))]));",
+                  "const p = pm.response.json().page;",
+                  "pm.test(\"Metadados da página\", () => { pm.expect(p.totalElements).to.eql(3); pm.expect(p.totalPages).to.eql(2); pm.expect(p.size).to.eql(2); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Segunda página",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino?usuarioId={{usuarioId}}&size=2&page=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuarioId}}"
+                },
+                {
+                  "key": "size",
+                  "value": "2"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sessões esperadas, na ordem\", () => pm.expect(pm.response.json().content.map(s => s.id)).to.eql([Number(pm.collectionVariables.get(\"sessaoPeitoId\"))]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ordenar por volume",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino?usuarioId={{usuarioId}}&sort=volumeTotalKg,desc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuarioId}}"
+                },
+                {
+                  "key": "sort",
+                  "value": "volumeTotalKg,desc"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sessões esperadas, na ordem\", () => pm.expect(pm.response.json().content.map(s => s.id)).to.eql([Number(pm.collectionVariables.get(\"sessaoPeitoId\")), Number(pm.collectionVariables.get(\"sessaoPernasId\")), Number(pm.collectionVariables.get(\"sessaoCanceladaId\"))]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ordenação não permitida (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino?usuarioId={{usuarioId}}&sort=senha",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuarioId}}"
+                },
+                {
+                  "key": "sort",
+                  "value": "senha"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensagem: Não é possível ordenar por 'senha'. Use: dataTreino, iniciadaEm, volumeTotalKg\", () => pm.expect(pm.response.json().detail).to.eql(\"Não é possível ordenar por 'senha'. Use: dataTreino, iniciadaEm, volumeTotalKg\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Histórico paginado do usuário",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/sessoes-treino?status=CANCELADA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}",
+                "sessoes-treino"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "CANCELADA"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sessões esperadas, na ordem\", () => pm.expect(pm.response.json().content.map(s => s.id)).to.eql([Number(pm.collectionVariables.get(\"sessaoCanceladaId\"))]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Limpeza",
+      "description": "Remove os dados criados pela execução.",
+      "item": [
+        {
+          "name": "Excluir sessão finalizada (422)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoPeitoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoPeitoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Mensagem: Regra de negócio violada\", () => pm.expect(pm.response.json().title).to.eql(\"Regra de negócio violada\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir sessão cancelada",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessoes-treino/{{sessaoCanceladaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessoes-treino",
+                "{{sessaoCanceladaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir jogador e todo o histórico",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar jogador excluído (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir treinador",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{treinadorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{treinadorId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir exercício sem vínculos",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/exercicios/{{exercicioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "exercicios",
+                "{{exercicioId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir grupo muscular sem exercícios",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/grupos-musculares/{{grupoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "grupos-musculares",
+                "{{grupoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
